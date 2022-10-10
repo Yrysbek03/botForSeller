@@ -7,6 +7,8 @@ username = 'daniyalsagynbay@gmail.com'
 password = 'Doni2003!'
 company = 'XAN SHOP'
 
+
+
 # pgHost = 'localhost'
 # pgDatabase = 'postgres'
 # pgUser = 'postgres'
