@@ -3,9 +3,9 @@ BOT_TOKEN = '5771726610:AAFcPH-BTSt2JO5ptzot50I7GnzFD0haVwY'
 ADMINS = [701353749]
 IP = 'localhost'
 
-username = 'daulet.nurgali16@gmail.com'
-password = 'Dauka2004*'
-company = 'TUMAR SHOP'
+username = 'daniyalsagynbay@gmail.com'
+password = 'Doni2003!'
+company = 'XAN SHOP'
 
 # pgHost = 'localhost'
 # pgDatabase = 'postgres'

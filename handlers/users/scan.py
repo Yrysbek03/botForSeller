@@ -8,6 +8,12 @@ from loader import dp, db
 from utils.parser_api.parser import parse_all_goods
 
 
+@dp.message_handler(Command('clear'))
+async def scan(message: types.Message):
+    await db.delete_goods()
+    await message.answer('Товары успешно удалены!')
+
+
 @dp.message_handler(Command('g'))
 async def scan(message: types.Message):
     await message.answer_photo('p1.png')
