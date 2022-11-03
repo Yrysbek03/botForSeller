@@ -13,7 +13,7 @@ company = 'ZHANERKE SHOP'
 # pgDatabase = 'postgres'
 # pgUser = 'postgres'
 # pgPort = 5432
-# pgPassword = 'Almakhan2003'
+# pgPassword = 'Almakhan2003   '
 
 pgHost = 'ec2-52-200-215-149.compute-1.amazonaws.com'
 pgDatabase = 'd3j768v9krf6k6'
