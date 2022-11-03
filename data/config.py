@@ -3,9 +3,9 @@ BOT_TOKEN = '5771726610:AAFcPH-BTSt2JO5ptzot50I7GnzFD0haVwY'
 ADMINS = [701353749]
 IP = 'localhost'
 
-username = 'daniyalsagynbay@gmail.com'
-password = 'Doni2003!'
-company = 'XAN SHOP'
+username = 'shabantaevalaura1980@gmail.com'
+password = 'Shabantaeva@laura007'
+company = 'ZHANERKE SHOP'
 
 
 
