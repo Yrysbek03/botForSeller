@@ -88,7 +88,7 @@ async def parse_all_goods():
         browser.implicitly_wait(5)
         # Move to goods page
         browser.find_element(by=By.XPATH, value='//*[@id="main-nav-offers"]/a').send_keys(Keys.ENTER)
-        await asyncio.sleep(10)
+        await asyncio.sleep(60)
         count = 0
         pages = math.ceil(int(browser.find_element(By.CLASS_NAME, 'gwt-HTML').text[
                               browser.find_element(By.CLASS_NAME, 'gwt-HTML').text.rfind(' '):].strip()) / 10)

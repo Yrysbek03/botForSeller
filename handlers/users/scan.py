@@ -5,7 +5,7 @@ from aiogram.types import ReplyKeyboardRemove
 
 from keyboards.inline.inline_keyboards import main_menu
 from loader import dp, db
-from utils.parser_api.parser import parse_all_goods
+from utils.parser_api.parser_1 import parse_all_goods
 
 
 @dp.message_handler(Command('clear'))
