@@ -125,8 +125,12 @@ async def check_good_rating(browser, link, first: bool):
         browser.implicitly_wait(15)  # 15
         browser.set_window_size(width=1366, height=1300)
         if first:
-            browser.find_element(By.XPATH, '/html/body/div[4]/div[1]/div/div[1]/div[1]/div/ul[1]/li[16]/a').click()
-            browser.implicitly_wait(15)  # 15
+            try:
+                browser.find_element(By.XPATH, '/html/body/div[3]/div[1]/div/div[1]/div[1]/div/ul[1]/li[16]/a').click()
+                browser.implicitly_wait(15)  # 15
+            except:
+                browser.find_element(By.XPATH, '/html/body/div[4]/div[1]/div/div[1]/div[1]/div/ul[1]/li[16]/a').click()
+                browser.implicitly_wait(15)  # 15
         first = browser.find_element(By.TAG_NAME, 'tbody').find_element(By.TAG_NAME, 'tr')
         if first.find_element(By.TAG_NAME, 'td').find_element(By.TAG_NAME, 'a').text != company:
             price = first.find_element(By.CLASS_NAME, 'sellers-table__price-cell-text').text
