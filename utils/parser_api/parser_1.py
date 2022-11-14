@@ -122,7 +122,7 @@ async def check_good_rating(browser, link, first: bool):
     try:
         browser.get(link)
         await asyncio.sleep(10)  # 5
-        browser.implicitly_wait(15)  # 15
+        browser.implicitly_wait(30)  # 15
         browser.set_window_size(width=1366, height=1300)
         if first:
             try:
