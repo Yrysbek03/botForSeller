@@ -45,15 +45,22 @@ async def parse_goods(browser, pages):
 
 async def authenticate(browser):
     browser.get('https://kaspi.kz/merchantcabinet/')
+    try:
+        browser.find_element(by=By.TAG_NAME, value='ul').find_elements(by=By.TAG_NAME, value='li')[1].click()
+    except:
+        pass
     browser.implicitly_wait(2)
+    await asyncio.sleep(1)
 
-    username_input = browser.find_element(By.NAME, 'username')
+    username_input = browser.find_element(By.ID, 'user_email')
     username_input.clear()
     username_input.send_keys(username)
+    username_input.send_keys(Keys.ENTER)
 
-    await asyncio.sleep(.3)
-
-    password_input = browser.find_element(By.NAME, 'password')
+    await asyncio.sleep(1)
+    browser.implicitly_wait(1)
+    # WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.NAME, 'password')))
+    password_input = browser.find_element(By.CSS_SELECTOR, 'input[type="password"]')
     password_input.clear()
     password_input.send_keys(password)
 
@@ -62,20 +69,17 @@ async def authenticate(browser):
 
 
 async def next_page(browser: webdriver.Chrome):
-    button = browser.find_element(By.CSS_SELECTOR, 'img[aria-label="Next page"]')
-    browser.set_window_size(width=1366, height=1300)
-    browser.implicitly_wait(10)
-    ActionChains(browser).move_to_element(button).click(button).perform()
+    browser.find_element(By.CSS_SELECTOR, 'a[class="pagination-link pagination-next"]').click()
 
 
 async def parse_all_goods():
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
-    browser = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
-    # browser = webdriver.Chrome('Y:\\Python\\chromedriver\\chromedriver.exe')
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    # chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--no-sandbox")
+    # browser = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
+    browser = webdriver.Chrome('Y:\\Python\\chromedriver\\chromedriver.exe')
     try:
         await authenticate(browser)
         boolean = await test(browser)
@@ -87,23 +91,23 @@ async def parse_all_goods():
         await asyncio.sleep(5)
         browser.implicitly_wait(5)
         # Move to goods page
-        browser.find_element(by=By.XPATH, value='//*[@id="main-nav-offers"]/a').send_keys(Keys.ENTER)
-        await asyncio.sleep(60)
+        browser.get('https://kaspi.kz/mc/#/products')
+        await asyncio.sleep(10)
         count = 0
-        pages = math.ceil(int(browser.find_element(By.CLASS_NAME, 'gwt-HTML').text[
-                              browser.find_element(By.CLASS_NAME, 'gwt-HTML').text.rfind(' '):].strip()) / 10)
+        pages = math.ceil(int(browser.find_element(By.CLASS_NAME, 'page-info').text[
+                              browser.find_element(By.CLASS_NAME, 'page-info').text.rfind(' '):].strip()) / 10)
         # Start parsing
         for i in range(pages):
             browser.implicitly_wait(10)
             await asyncio.sleep(2)
-            blocks = browser.find_elements(By.CLASS_NAME, "offer-managment__product-cell-inner")
+            blocks = browser.find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
             for block in blocks:
-                a_s = block.find_element(By.CLASS_NAME, 'offer-managment__product-cell-link')
+                a_s = block.find_element(By.CLASS_NAME, 'media-content').find_element(by=By.TAG_NAME, value='a')
+                slug = block.find_element(By.CLASS_NAME, 'mr-2').get_attribute('href')
+                slug = slug[slug.rfind('/')+1:]
                 try:
                     await db.insert_good(name=a_s.text, link=a_s.get_attribute('href'),
-                                         slug=
-                                         block.find_elements(By.CLASS_NAME, 'offer-managment__product-cell-meta-text')
-                                         [1].text)
+                                         slug=slug)
                     count += 1
                 except UniqueViolationError as ex:
                     print(ex)
@@ -121,16 +125,12 @@ async def parse_all_goods():
 async def check_good_rating(browser, link, first: bool):
     try:
         browser.get(link)
-        await asyncio.sleep(10)  # 5
-        browser.implicitly_wait(30)  # 15
+        await asyncio.sleep(5)  # 5
+        browser.implicitly_wait(15)  # 15
         browser.set_window_size(width=1366, height=1300)
         if first:
-            try:
-                browser.find_element(By.XPATH, '/html/body/div[3]/div[1]/div/div[1]/div[1]/div/ul[1]/li[16]/a').click()
-                browser.implicitly_wait(15)  # 15
-            except:
-                browser.find_element(By.XPATH, '/html/body/div[4]/div[1]/div/div[1]/div[1]/div/ul[1]/li[16]/a').click()
-                browser.implicitly_wait(15)  # 15
+            browser.find_element(By.CSS_SELECTOR, 'a[data-city-id="710000000"]').click()
+            browser.implicitly_wait(15)  # 15
         first = browser.find_element(By.TAG_NAME, 'tbody').find_element(By.TAG_NAME, 'tr')
         if first.find_element(By.TAG_NAME, 'td').find_element(By.TAG_NAME, 'a').text != company:
             price = first.find_element(By.CLASS_NAME, 'sellers-table__price-cell-text').text
@@ -188,7 +188,7 @@ async def test(browser):
     try:
         await asyncio.sleep(5)  # 5
         browser.implicitly_wait(5)
-        browser.find_element(by=By.XPATH, value='//*[@id="main-nav-offers"]/a').send_keys(Keys.ENTER)
+        browser.get('https://kaspi.kz/mc/#/products')
         await asyncio.sleep(5)
         return True
     except Exception:
@@ -200,10 +200,10 @@ async def change_price_of_good(browser, slugs):
         try:
             await authenticate(browser)
             browser.set_window_size(1500, 1400)
-            boolean = await test(browser)
-            while not boolean:
-                browser.refresh()
-                boolean = await test(browser)
+            await asyncio.sleep(5)  # 5
+            browser.implicitly_wait(5)
+            browser.get('https://kaspi.kz/mc/#/products')
+            await asyncio.sleep(5)
         except Exception as e:
             logging.info(e.args)
             return None
@@ -217,24 +217,32 @@ async def change_price_of_good(browser, slugs):
 
                 browser.execute_script('let l = document.querySelector("#jvlabelWrap");l.style.top = "0";')
 
-                text_page = browser.find_element(By.CLASS_NAME, 'gwt-HTML').text
-                current = int(text_page[text_page.find('-') + 1:text_page.find(' ')])
-                pages = int(text_page[text_page.rfind(' '):].strip())
+                text_page = browser.find_element(By.CLASS_NAME, 'page-info').text.strip()
+                i_after_def = text_page.find('-') + 2
+                i_after_num = text_page[i_after_def:].find(' ')
+                current = int(text_page[i_after_def:i_after_def + i_after_num])
+                pages = int(text_page[text_page.rfind(' ') + 1:].strip())
+
                 blocks = browser.find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
                 have_other = False
                 index = -1
+
+                # print(current, pages)
+
                 for block in blocks:
                     index += 1
-                    slug = block.find_elements(By.CLASS_NAME, 'offer-managment__product-cell-meta-text')[1].text
+                    slug = block.find_element(By.CLASS_NAME, 'mr-2').get_attribute('href')
+                    slug = slug[slug.rfind('/')+1:]
                     try:
                         current_price = int(
-                            block.find_element(By.CLASS_NAME, 'offer-managment__price-cell-price').text.replace(' ', ''))
+                            block.find_elements(By.CLASS_NAME, 'is-5')[1].text.replace(' ', ''))
                     except Exception as ex:
                         current_price = int(
-                            block.find_element(By.CLASS_NAME, 'offer-managment__price-cell-price').text.replace(' ', '')[
-                            :block.find_element(By.CLASS_NAME, 'offer-managment__price-cell-price').text.replace(' ',
+                            block.find_elements(By.CLASS_NAME, 'is-5')[1].text.replace(' ', '')[
+                            :block.find_elements(By.CLASS_NAME, 'is-5')[1].text.replace(' ',
                                                                                                                  '').find(
                                 '...')])
+
                     if slug in slugs.keys():
                         good = await db.select_good(slug=slug)
                         if current_price == good[4]:
@@ -244,13 +252,11 @@ async def change_price_of_good(browser, slugs):
                         else:
                             new_price = good[4]  # 4
 
-                        buttons = browser.find_elements(By.CSS_SELECTOR, 'a[class="icon _medium _edit"]')
-                        element = WebDriverWait(browser, 5).until(EC.element_to_be_clickable(
-                            buttons[index]))
-                        element.click()
-                        browser.implicitly_wait(10)
+                        browser.get(f'https://kaspi.kz/mc/#/products/{slug}')
 
-                        checkbox = browser.find_element(By.ID, 'checkbox-control-price')
+                        await asyncio.sleep(2)
+
+                        checkbox = browser.find_elements(By.TAG_NAME, 'input')[4]
 
                         checkbox.click()
                         await asyncio.sleep(.3)
@@ -259,14 +265,15 @@ async def change_price_of_good(browser, slugs):
                         # checkbox.click()
                         # await asyncio.sleep(.2)
 
-                        textarea = browser.find_element(By.CSS_SELECTOR, 'input[type="text"]')
+                        # textarea = browser.find_element(By.CSS_SELECTOR, 'input[type="text"]')
+                        textarea = browser.find_elements(By.TAG_NAME, 'input')[5]
 
                         textarea.send_keys(new_price)
                         await asyncio.sleep(0.3)
 
                         previous_link = browser.current_url
 
-                        browser.find_element(By.CLASS_NAME, 'button').click()
+                        browser.find_element(By.TAG_NAME, 'button').click()
                         slugs.pop(slug)
                         await asyncio.sleep(2)  # 2
 
@@ -299,40 +306,42 @@ async def change_price_of_good(browser, slugs):
         logging.info(ex5.args)
 
 
-async def control_ratings(goods):
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
-    browser = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
-    # browser = webdriver.Chrome('Y:\\Python\\chromedriver\\chromedriver.exe')
-    to_be_change = {}
+async def control_ratings(goods, too=None):
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    # chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--no-sandbox")
+    # browser = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
+    browser = webdriver.Chrome('Y:\\Python\\chromedriver\\chromedriver.exe')
+    to_be_change = too if too else {}
 
     try:
         first = True
         finished = True
-        for index, good in enumerate(goods):
-            try:
-                first_price = await check_good_rating(browser, good[2], first)  # 2
-            except Exception as e:
-                logging.info(e.args)
-                logging.info("111")
-            if index == 0:
-                first = False
-            if first_price:
+        if not too:
+            for index, good in enumerate(goods):
                 try:
-                    if first_price == -5 or first_price == -1 or first_price == -2 or first_price == -3:
-                        await bot.send_message(ADMINS[0], f'returned {first_price}')
-                        finished = False
-                        break
-                    to_be_change[good[3]] = first_price
+                    first_price = await check_good_rating(browser, good[2], first)  # 2
                 except Exception as e:
                     logging.info(e.args)
-                    logging.info("222")
-            await asyncio.sleep(2)
+                    logging.info("111")
+                if index == 0:
+                    first = False
+                if first_price:
+                    try:
+                        if first_price == -5 or first_price == -1 or first_price == -2 or first_price == -3:
+                            await bot.send_message(ADMINS[0], f'returned {first_price}')
+                            finished = False
+                            continue
+                        to_be_change[good[3]] = first_price
+                    except Exception as e:
+                        logging.info(e.args)
+                        logging.info("222")
+                await asyncio.sleep(2)
         if len(to_be_change) > 0:
             try:
+                print(to_be_change)
                 await change_price_of_good(browser, to_be_change)
             except Exception as e:
                 logging.info(e.args)
